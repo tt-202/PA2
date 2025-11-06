@@ -1,0 +1,9 @@
+insert,Alice,50000,1
+insert,Bob,60000,2
+insert,Charlie,55000,3
+search,Alice,4
+print,5
+delete,Bob,6
+search,Bob,7
+print,8
+

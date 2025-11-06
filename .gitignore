@@ -1,0 +1,34 @@
+# Build artifacts
+*.o
+chash
+chash.exe
+
+# Generated files
+hash.log
+*.log
+
+# Test files
+test_commands.txt
+commands_backup.txt
+test_submission/
+
+# Submission files
+PA2_submission.zip
+*.zip
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Helper scripts (optional - uncomment if you don't want to track these)
+# create_submission.sh
+# SUBMISSION_CHECKLIST.md
+# HOW_TO_SUBMIT.md
+
