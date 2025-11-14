@@ -1,3 +1,9 @@
+/* Group 50
+Tuyen Tran - William Bu
+PA2-Concurrent Hash Table
+Due Date: 11/21/2025
+*/
+
 #include "hash.h"
 #include <stdio.h>
 

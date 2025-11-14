@@ -1,14 +1,20 @@
+/* Group 50
+Tuyen Tran - William Bu
+PA2-Concurrent Hash Table
+Due Date: 11/21/2025
+*/
+
 #include "hash.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-// Insert or update a record
+// Insert a record
 void insert(const char *name, uint32_t salary, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d, INSERT,%u,%s,%u\n", 
-                current_timestamp(), priority, hash, name, salary);
+    log_message("%lld: THREAD %d,INSERT,%s,%u,%d\n", 
+                current_timestamp(), priority, name, salary, priority);
     
     rwlock_acquire_writelock(&rw_lock, priority);
     
@@ -18,14 +24,9 @@ void insert(const char *name, uint32_t salary, int priority) {
     
     while (current != NULL) {
         if (current->hash == hash) {
-            // Update existing record
-            uint32_t old_salary = current->salary;
-            current->salary = salary;
-            
+            // Duplicate entry found
             rwlock_release_writelock(&rw_lock, priority);
-            
-            console_message("Updated record %u from %s,%u to %s,%u\n", 
-                          hash, name, old_salary, name, salary);
+            console_message("Insert failed.  Entry %u is a duplicate.\n", hash);
             return;
         }
         prev = current;
@@ -56,8 +57,8 @@ void insert(const char *name, uint32_t salary, int priority) {
 void delete_record(const char *name, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d, DELETE,%u,%s\n", 
-                current_timestamp(), priority, hash, name);
+    log_message("%lld: THREAD %d,DELETE,%s,%d\n", 
+                current_timestamp(), priority, name, priority);
     
     rwlock_acquire_writelock(&rw_lock, priority);
     
@@ -67,17 +68,23 @@ void delete_record(const char *name, int priority) {
     while (current != NULL) {
         if (current->hash == hash) {
             // Found the record to delete
+            uint32_t del_hash = current->hash;
+            char del_name[50];
+            uint32_t del_salary = current->salary;
+            strncpy(del_name, current->name, 49);
+            del_name[49] = '\0';
+            
             if (prev == NULL) {
                 hash_table = current->next;
             } else {
                 prev->next = current->next;
             }
             
-            console_message("Deleted record for %u,%s,%u\n", 
-                          current->hash, current->name, current->salary);
-            
             free(current);
             rwlock_release_writelock(&rw_lock, priority);
+            
+            console_message("Deleted record for %u,%s,%u\n", 
+                          del_hash, del_name, del_salary);
             return;
         }
         prev = current;
@@ -86,15 +93,15 @@ void delete_record(const char *name, int priority) {
     
     rwlock_release_writelock(&rw_lock, priority);
     
-    console_message("Record not found for deletion: %s\n", name);
+    console_message("Entry %u not deleted.  Not in database.\n", hash);
 }
 
 // Search for a record
 hashRecord* search(const char *name, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d, SEARCH,%u,%s\n", 
-                current_timestamp(), priority, hash, name);
+    log_message("%lld: THREAD %d,SEARCH,%s,%d\n", 
+                current_timestamp(), priority, name, priority);
     
     rwlock_acquire_readlock(&rw_lock, priority);
     
@@ -122,7 +129,7 @@ hashRecord* search(const char *name, int priority) {
 
 // Print entire table (sorted by hash)
 void print_table(int priority) {
-    log_message("%lld: THREAD %d, PRINT\n", current_timestamp(), priority);
+    log_message("%lld: THREAD %d,PRINT,%d\n", current_timestamp(), priority, priority);
     
     rwlock_acquire_readlock(&rw_lock, priority);
     
@@ -136,7 +143,7 @@ void print_table(int priority) {
     
     if (count == 0) {
         rwlock_release_readlock(&rw_lock, priority);
-        console_message("Current Database: (empty)\n");
+        console_message("Current Database:\n");
         return;
     }
     
@@ -168,4 +175,39 @@ void print_table(int priority) {
     
     free(records);
     rwlock_release_readlock(&rw_lock, priority);
+}
+
+// Update salary for a record
+void updateSalary(const char *name, uint32_t new_salary, int priority) {
+    uint32_t hash = jenkins_one_at_a_time_hash(name);
+    
+    log_message("%lld: THREAD %d,UPDATE,%s,%u\n", 
+                current_timestamp(), priority, name, new_salary);
+    
+    rwlock_acquire_writelock(&rw_lock, priority);
+    
+    hashRecord *current = hash_table;
+    
+    while (current != NULL) {
+        if (current->hash == hash) {
+            // Found the record to update
+            uint32_t old_salary = current->salary;
+            char old_name[50];
+            strncpy(old_name, current->name, 49);
+            old_name[49] = '\0';
+            
+            current->salary = new_salary;
+            
+            rwlock_release_writelock(&rw_lock, priority);
+            
+            console_message("Updated record %u from %u,%s,%u to %u,%s,%u\n", 
+                          hash, hash, old_name, old_salary, hash, old_name, new_salary);
+            return;
+        }
+        current = current->next;
+    }
+    
+    rwlock_release_writelock(&rw_lock, priority);
+    
+    console_message("Updated failed.  Entry %u not found.\n", hash);
 }

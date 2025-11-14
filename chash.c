@@ -1,3 +1,10 @@
+/* Group 50
+Tuyen Tran - William Bu
+PA2-Concurrent Hash Table
+Due Date: 11/21/2025
+*/
+
+
 #include "hash.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,13 +27,15 @@ void* process_command(void *arg) {
         insert(cmd->name, cmd->salary, cmd->priority);
     } else if (strcmp(cmd->command, "delete") == 0) {
         delete_record(cmd->name, cmd->priority);
+    } else if (strcmp(cmd->command, "update") == 0) {
+        updateSalary(cmd->name, cmd->salary, cmd->priority);
     } else if (strcmp(cmd->command, "search") == 0) {
         hashRecord *result = search(cmd->name, cmd->priority);
         if (result != NULL) {
             console_message("Found: %u,%s,%u\n", result->hash, result->name, result->salary);
             free(result);
         } else {
-            console_message("No Record Found\n");
+            console_message("Not Found: %s not found.\n", cmd->name);
         }
     } else if (strcmp(cmd->command, "print") == 0) {
         print_table(cmd->priority);
@@ -141,6 +150,33 @@ int main() {
             }
             cmd->priority = atoi(token);
             
+        } else if (strcmp(cmd->command, "update") == 0) {
+            // Parse name
+            token = strtok(NULL, ",");
+            if (token == NULL) {
+                free(cmd);
+                continue;
+            }
+            strncpy(cmd->name, token, 49);
+            cmd->name[49] = '\0';
+            
+            // Parse new salary value
+            token = strtok(NULL, ",");
+            if (token == NULL) {
+                free(cmd);
+                continue;
+            }
+            cmd->salary = atoi(token);
+            
+            // Update doesn't have priority in command format, use 0 as default
+            // But check if there's an optional priority parameter
+            token = strtok(NULL, ",");
+            if (token != NULL) {
+                cmd->priority = atoi(token);
+            } else {
+                cmd->priority = 0;
+            }
+            
         } else if (strcmp(cmd->command, "print") == 0) {
             // Parse priority
             token = strtok(NULL, ",");
@@ -174,6 +210,16 @@ int main() {
     for (int i = 0; i < command_count; i++) {
         pthread_join(threads[i], NULL);
     }
+    
+    // Always print final database state, even if last command was PRINT
+    // Find the highest priority to use for final print
+    int max_priority = 0;
+    for (int i = 0; i < command_count; i++) {
+        if (commands[i]->priority > max_priority) {
+            max_priority = commands[i]->priority;
+        }
+    }
+    print_table(max_priority + 1); // Use priority higher than any command
     
     // Cleanup
     free(threads);
