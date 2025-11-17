@@ -35,7 +35,7 @@ void* process_command(void *arg) {
             console_message("Found: %u,%s,%u\n", result->hash, result->name, result->salary);
             free(result);
         } else {
-            console_message("Not Found: %s not found.\n", cmd->name);
+            console_message("Not Found:  %s not found.\n", cmd->name);
         }
     } else if (strcmp(cmd->command, "print") == 0) {
         print_table(cmd->priority);

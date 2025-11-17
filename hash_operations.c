@@ -13,8 +13,8 @@ Due Date: 11/21/2025
 void insert(const char *name, uint32_t salary, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d,INSERT,%s,%u,%d\n", 
-                current_timestamp(), priority, name, salary, priority);
+    log_message("%lld: THREAD %d,INSERT,%u,%s,%u\n", 
+                current_timestamp(), priority, hash, name, salary);
     
     rwlock_acquire_writelock(&rw_lock, priority);
     
@@ -57,8 +57,8 @@ void insert(const char *name, uint32_t salary, int priority) {
 void delete_record(const char *name, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d,DELETE,%s,%d\n", 
-                current_timestamp(), priority, name, priority);
+    log_message("%lld: THREAD %d,DELETE,%u,%s\n", 
+                current_timestamp(), priority, hash, name);
     
     rwlock_acquire_writelock(&rw_lock, priority);
     
@@ -100,8 +100,8 @@ void delete_record(const char *name, int priority) {
 hashRecord* search(const char *name, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d,SEARCH,%s,%d\n", 
-                current_timestamp(), priority, name, priority);
+    log_message("%lld: THREAD %d,SEARCH,%u,%s\n", 
+                current_timestamp(), priority, hash, name);
     
     rwlock_acquire_readlock(&rw_lock, priority);
     
@@ -181,8 +181,8 @@ void print_table(int priority) {
 void updateSalary(const char *name, uint32_t new_salary, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d,UPDATE,%s,%u\n", 
-                current_timestamp(), priority, name, new_salary);
+    log_message("%lld: THREAD %d,UPDATE,%u,%s,%u\n", 
+                current_timestamp(), priority, hash, name, new_salary);
     
     rwlock_acquire_writelock(&rw_lock, priority);
     
@@ -200,8 +200,8 @@ void updateSalary(const char *name, uint32_t new_salary, int priority) {
             
             rwlock_release_writelock(&rw_lock, priority);
             
-            console_message("Updated record %u from %u,%s,%u to %u,%s,%u\n", 
-                          hash, hash, old_name, old_salary, hash, old_name, new_salary);
+            console_message("Updated record %u from %s,%u to %s,%u\n", 
+                          hash, old_name, old_salary, old_name, new_salary);
             return;
         }
         current = current->next;
