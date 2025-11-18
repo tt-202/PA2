@@ -13,9 +13,6 @@ Due Date: 11/21/2025
 void insert(const char *name, uint32_t salary, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d,INSERT,%s,%u,%d\n", 
-                current_timestamp(), priority, name, salary, priority);
-    
     rwlock_acquire_writelock(&rw_lock, priority);
     
     // Search for existing record
@@ -57,9 +54,6 @@ void insert(const char *name, uint32_t salary, int priority) {
 void delete_record(const char *name, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d,DELETE,%s,%d\n", 
-                current_timestamp(), priority, name, priority);
-    
     rwlock_acquire_writelock(&rw_lock, priority);
     
     hashRecord *current = hash_table;
@@ -100,9 +94,6 @@ void delete_record(const char *name, int priority) {
 hashRecord* search(const char *name, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d,SEARCH,%s,%d\n", 
-                current_timestamp(), priority, name, priority);
-    
     rwlock_acquire_readlock(&rw_lock, priority);
     
     hashRecord *current = hash_table;
@@ -128,9 +119,13 @@ hashRecord* search(const char *name, int priority) {
 }
 
 // Print entire table (sorted by hash)
+<<<<<<< HEAD
 void print_table(int priority, int is_final) {
     log_message("%lld: THREAD %d,PRINT,%d\n", current_timestamp(), priority, priority);
     
+=======
+void print_table(int priority) {
+>>>>>>> ee7f5a25bcba7d3c326fe29047b9d732517c317b
     rwlock_acquire_readlock(&rw_lock, priority);
     
     // Count records
@@ -186,9 +181,6 @@ void print_table(int priority, int is_final) {
 // Update salary for a record
 void updateSalary(const char *name, uint32_t new_salary, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
-    
-    log_message("%lld: THREAD %d,UPDATE,%s,%u\n", 
-                current_timestamp(), priority, name, new_salary);
     
     rwlock_acquire_writelock(&rw_lock, priority);
     

@@ -44,6 +44,18 @@ extern FILE *log_file;
 extern pthread_mutex_t console_mutex;
 extern pthread_mutex_t log_mutex;
 
+// Priority synchronization
+extern pthread_mutex_t priority_mutex;
+extern pthread_cond_t priority_cond;
+extern int current_priority;
+extern int total_commands;
+extern int threads_waiting;
+extern int all_threads_ready;
+
+// Lock statistics
+extern int lock_acquisitions;
+extern int lock_releases;
+
 // Function prototypes
 uint32_t jenkins_one_at_a_time_hash(const char *key);
 long long current_timestamp();
