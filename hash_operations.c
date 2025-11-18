@@ -119,13 +119,9 @@ hashRecord* search(const char *name, int priority) {
 }
 
 // Print entire table (sorted by hash)
-<<<<<<< HEAD
 void print_table(int priority, int is_final) {
     log_message("%lld: THREAD %d,PRINT,%d\n", current_timestamp(), priority, priority);
     
-=======
-void print_table(int priority) {
->>>>>>> ee7f5a25bcba7d3c326fe29047b9d732517c317b
     rwlock_acquire_readlock(&rw_lock, priority);
     
     // Count records

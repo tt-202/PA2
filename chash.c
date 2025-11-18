@@ -81,15 +81,10 @@ void* process_command(void *arg) {
             console_message("%s not found.\n", cmd->name);
         }
     } else if (strcmp(cmd->command, "print") == 0) {
-<<<<<<< HEAD
         // Check if this is the final print (highest priority)
         extern int g_max_priority;
         int is_final = (cmd->priority == g_max_priority) ? 1 : 0;
         print_table(cmd->priority, is_final);
-=======
-        log_message("%lld: THREAD %d PRINT\n", current_timestamp(), cmd->priority);
-        print_table(cmd->priority);
->>>>>>> ee7f5a25bcba7d3c326fe29047b9d732517c317b
     }
     
     // Signal next thread
@@ -173,11 +168,7 @@ int main() {
         strncpy(cmd->command, token, 19);
         cmd->command[19] = '\0';
         
-<<<<<<< HEAD
         // Skip threads command
-=======
-        // Skip the "threads" configuration line
->>>>>>> ee7f5a25bcba7d3c326fe29047b9d732517c317b
         if (strcmp(cmd->command, "threads") == 0) {
             free(cmd);
             continue;
@@ -221,12 +212,8 @@ int main() {
             
             cmd->salary = 0;
             
-<<<<<<< HEAD
             // Parse priority - skip middle tokens, take the last one
             char *last_token = NULL;
-=======
-            // Get next token - could be priority directly or an unused parameter
->>>>>>> ee7f5a25bcba7d3c326fe29047b9d732517c317b
             token = strtok(NULL, ",");
             while (token != NULL) {
                 last_token = token;
@@ -236,20 +223,7 @@ int main() {
                 free(cmd);
                 continue;
             }
-<<<<<<< HEAD
             cmd->priority = atoi(last_token);
-=======
-            
-            // Check if there's another token (meaning current token is unused parameter)
-            char *next_token = strtok(NULL, ",");
-            if (next_token != NULL) {
-                // Format: command,name,unused,priority
-                cmd->priority = atoi(next_token);
-            } else {
-                // Format: command,name,priority
-                cmd->priority = atoi(token);
-            }
->>>>>>> ee7f5a25bcba7d3c326fe29047b9d732517c317b
             
         } else if (strcmp(cmd->command, "update") == 0) {
             // Parse name
@@ -283,7 +257,6 @@ int main() {
             }
             
         } else if (strcmp(cmd->command, "print") == 0) {
-<<<<<<< HEAD
             // Parse priority - skip middle tokens, take the last one
             char *last_token = NULL;
             token = strtok(NULL, ",");
@@ -296,23 +269,6 @@ int main() {
                 continue;
             }
             cmd->priority = atoi(last_token);
-=======
-            // Parse parameters - could be just priority or have unused params before it
-            char *tokens[3];
-            int token_count = 0;
-            
-            while ((token = strtok(NULL, ",")) != NULL && token_count < 3) {
-                tokens[token_count++] = token;
-            }
-            
-            if (token_count == 0) {
-                free(cmd);
-                continue;
-            }
-            
-            // Priority is always the last token
-            cmd->priority = atoi(tokens[token_count - 1]);
->>>>>>> ee7f5a25bcba7d3c326fe29047b9d732517c317b
             cmd->name[0] = '\0';
             cmd->salary = 0;
         } else {
@@ -333,7 +289,6 @@ int main() {
     // Sort commands by priority
     qsort(commands, command_count, sizeof(Command *), compare_commands);
     
-<<<<<<< HEAD
     // Find the highest priority and mark the last PRINT command as final
     // (commands will be freed in threads)
     int max_priority = 0;
@@ -355,9 +310,6 @@ int main() {
     g_max_priority = max_priority;
     
     // Create and execute threads in priority order
-=======
-    // Create and execute threads
->>>>>>> ee7f5a25bcba7d3c326fe29047b9d732517c317b
     pthread_t *threads = (pthread_t *)malloc(command_count * sizeof(pthread_t));
     
     for (int i = 0; i < command_count; i++) {
@@ -381,19 +333,6 @@ int main() {
         pthread_join(threads[i], NULL);
     }
     
-<<<<<<< HEAD
-    // Always print final database state, even if last command was PRINT
-    // (unless last command was already PRINT to match expected output format)
-    if (!last_was_print) {
-        print_table(max_priority + 1, 1); // Final print, no trailing newline
-    } else {
-        // Last command was PRINT, but we need to ensure last line has no newline
-        // Re-print the last record without newline
-        // Actually, we can't do this easily. Let's just call print_table with is_final=1
-        // But wait, the print already happened. We need a different approach.
-        // Actually, the expected output shows the last PRINT command's output ends without newline
-        // So we need to modify the print_table to know if it's the final one
-=======
     // Write statistics and final table to log file
     fprintf(log_file, "Number of lock acquisitions: %d\n", lock_acquisitions);
     fprintf(log_file, "Number of lock releases: %d\n", lock_releases);
@@ -435,39 +374,6 @@ int main() {
         }
         
         free(records);
-    }
-    
-    // Also print final database state to console
-    console_message("Current Database:\n");
-    
-    if (count > 0) {
-        // Copy and sort again for console (table was already freed)
-        hashRecord **records = (hashRecord **)malloc(count * sizeof(hashRecord *));
-        curr = hash_table;
-        int i = 0;
-        while (curr != NULL) {
-            records[i++] = curr;
-            curr = curr->next;
-        }
-        
-        // Bubble sort by hash
-        for (i = 0; i < count - 1; i++) {
-            for (int j = 0; j < count - i - 1; j++) {
-                if (records[j]->hash > records[j + 1]->hash) {
-                    hashRecord *temp = records[j];
-                    records[j] = records[j + 1];
-                    records[j + 1] = temp;
-                }
-            }
-        }
-        
-        for (i = 0; i < count; i++) {
-            printf("%u,%s,%u\n", records[i]->hash, 
-                   records[i]->name, records[i]->salary);
-        }
-        
-        free(records);
->>>>>>> ee7f5a25bcba7d3c326fe29047b9d732517c317b
     }
     
     // Cleanup
