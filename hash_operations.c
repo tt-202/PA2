@@ -128,7 +128,7 @@ hashRecord* search(const char *name, int priority) {
 }
 
 // Print entire table (sorted by hash)
-void print_table(int priority) {
+void print_table(int priority, int is_final) {
     log_message("%lld: THREAD %d,PRINT,%d\n", current_timestamp(), priority, priority);
     
     rwlock_acquire_readlock(&rw_lock, priority);
@@ -169,8 +169,14 @@ void print_table(int priority) {
     
     console_message("Current Database:\n");
     for (i = 0; i < count; i++) {
-        console_message("%u,%s,%u\n", records[i]->hash, 
-                       records[i]->name, records[i]->salary);
+        if (i == count - 1 && is_final) {
+            // Last record of final print - don't print newline to match expected output format
+            console_message("%u,%s,%u", records[i]->hash, 
+                           records[i]->name, records[i]->salary);
+        } else {
+            console_message("%u,%s,%u\n", records[i]->hash, 
+                           records[i]->name, records[i]->salary);
+        }
     }
     
     free(records);
@@ -209,5 +215,5 @@ void updateSalary(const char *name, uint32_t new_salary, int priority) {
     
     rwlock_release_writelock(&rw_lock, priority);
     
-    console_message("Updated failed.  Entry %u not found.\n", hash);
+    console_message("Update failed. Entry %u not found.\n", hash);
 }
