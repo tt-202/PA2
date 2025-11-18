@@ -13,9 +13,6 @@ Due Date: 11/21/2025
 void insert(const char *name, uint32_t salary, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d,INSERT,%u,%s,%u\n", 
-                current_timestamp(), priority, hash, name, salary);
-    
     rwlock_acquire_writelock(&rw_lock, priority);
     
     // Search for existing record
@@ -57,9 +54,6 @@ void insert(const char *name, uint32_t salary, int priority) {
 void delete_record(const char *name, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d,DELETE,%u,%s\n", 
-                current_timestamp(), priority, hash, name);
-    
     rwlock_acquire_writelock(&rw_lock, priority);
     
     hashRecord *current = hash_table;
@@ -100,9 +94,6 @@ void delete_record(const char *name, int priority) {
 hashRecord* search(const char *name, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d,SEARCH,%u,%s\n", 
-                current_timestamp(), priority, hash, name);
-    
     rwlock_acquire_readlock(&rw_lock, priority);
     
     hashRecord *current = hash_table;
@@ -129,8 +120,6 @@ hashRecord* search(const char *name, int priority) {
 
 // Print entire table (sorted by hash)
 void print_table(int priority) {
-    log_message("%lld: THREAD %d,PRINT,%d\n", current_timestamp(), priority, priority);
-    
     rwlock_acquire_readlock(&rw_lock, priority);
     
     // Count records
@@ -181,9 +170,6 @@ void print_table(int priority) {
 void updateSalary(const char *name, uint32_t new_salary, int priority) {
     uint32_t hash = jenkins_one_at_a_time_hash(name);
     
-    log_message("%lld: THREAD %d,UPDATE,%u,%s,%u\n", 
-                current_timestamp(), priority, hash, name, new_salary);
-    
     rwlock_acquire_writelock(&rw_lock, priority);
     
     hashRecord *current = hash_table;
@@ -200,8 +186,8 @@ void updateSalary(const char *name, uint32_t new_salary, int priority) {
             
             rwlock_release_writelock(&rw_lock, priority);
             
-            console_message("Updated record %u from %s,%u to %s,%u\n", 
-                          hash, old_name, old_salary, old_name, new_salary);
+            console_message("Updated record %u from %u,%s,%u to %u,%s,%u\n", 
+                          hash, hash, old_name, old_salary, hash, old_name, new_salary);
             return;
         }
         current = current->next;
@@ -209,5 +195,5 @@ void updateSalary(const char *name, uint32_t new_salary, int priority) {
     
     rwlock_release_writelock(&rw_lock, priority);
     
-    console_message("Updated failed.  Entry %u not found.\n", hash);
+    console_message("Update failed. Entry %u not found.\n", hash);
 }

@@ -1,9 +1,60 @@
-insert,Alice,50000,1
-insert,Bob,60000,2
-insert,Charlie,55000,3
-search,Alice,4
-print,5
-delete,Bob,6
-search,Bob,7
-print,8
-
+threads,60,0
+insert,Shigeru Miyamoto,85000,0
+insert,Hideo Kojima,92000,1
+insert,Gabe Newell,88000,2
+insert,Todd Howard,79000,3
+insert,Hidetaka Miyazaki,95000,4
+print,0,0,5
+search,Shigeru Miyamoto,0,6
+search,Hideo Kojima,0,7
+insert,Hayao Miyazaki,105000,8
+insert,Satoshi Kon,98000,9
+insert,Makoto Shinkai,102000,10
+print,0,0,11
+update,Shigeru Miyamoto,90000,12
+update,Hideo Kojima,97000,13
+search,Shigeru Miyamoto,0,14
+search,Hideo Kojima,0,15
+insert,Cloud Strife,75000,16
+insert,Samus Aran,78000,17
+insert,Link,82000,18
+search,Cloud Strife,0,19
+search,Link,0,20
+print,0,0,21
+delete,Todd Howard,0,22
+search,Todd Howard,0,23
+insert,Solid Snake,80000,24
+insert,Master Chief,83000,25
+update,Gabe Newell,93000,26
+search,Gabe Newell,0,27
+insert,Aerith Gainsborough,71000,28
+insert,Tifa Lockhart,69000,29
+insert,Yuna,74000,30
+print,0,0,31
+search,Aerith Gainsborough,0,32
+update,Aerith Gainsborough,76000,33
+search,Aerith Gainsborough,0,34
+delete,Satoshi Kon,0,35
+search,Satoshi Kon,0,36
+insert,Nobuo Uematsu,88000,37
+insert,Koji Kondo,86000,38
+insert,Yoko Shimomura,91000,39
+print,0,0,40
+update,Hidetaka Miyazaki,100000,41
+update,Hayao Miyazaki,110000,42
+search,Hidetaka Miyazaki,0,43
+search,Hayao Miyazaki,0,44
+insert,Mario,65000,45
+insert,Sonic,67000,46
+delete,Tifa Lockhart,0,47
+search,Tifa Lockhart,0,48
+insert,Lara Croft,77000,49
+update,Master Chief,88000,50
+search,Master Chief,0,51
+print,0,0,52
+insert,Kirby,62000,53
+update,Link,87000,54
+delete,Yuna,0,55
+insert,Geralt of Rivia,84000,56
+search,Nonexistent Character,0,57
+update,Missing Person,99999,58
