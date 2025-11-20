@@ -71,7 +71,7 @@ void insert(const char *name, uint32_t salary, int priority);
 void delete_record(const char *name, int priority);
 void updateSalary(const char *name, uint32_t new_salary, int priority);
 hashRecord* search(const char *name, int priority);
-void print_table(int priority, int is_final);
+void print_table(int priority);
 
 void log_message(const char *format, ...);
 void console_message(const char *format, ...);

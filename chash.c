@@ -18,7 +18,6 @@ rwlock_t rw_lock;
 FILE *log_file = NULL;
 pthread_mutex_t console_mutex;
 pthread_mutex_t log_mutex;
-int g_max_priority = 0;
 
 // Priority synchronization
 pthread_mutex_t priority_mutex;
@@ -36,21 +35,33 @@ int lock_releases = 0;
 void* process_command(void *arg) {
     Command *cmd = (Command *)arg;
     
-    // Log waiting and increment counter
+    // Wait for our turn based on priority
     pthread_mutex_lock(&priority_mutex);
     log_message("%lld: THREAD %d WAITING FOR MY TURN\n", current_timestamp(), cmd->priority);
     threads_waiting++;
     
-    // Wait for all threads to be ready
-    while (!all_threads_ready) {
-        pthread_cond_wait(&priority_cond, &priority_mutex);
+    // Notify others that we've incremented (helps Thread 0 wake up when count reaches total)
+    pthread_cond_broadcast(&priority_cond);
+    
+    // Check if it's our turn
+    if (current_priority == cmd->priority) {
+        // We can proceed, but log AWAKENED and wait for all threads to be ready
+        log_message("%lld: THREAD %d AWAKENED FOR WORK\n", current_timestamp(), cmd->priority);
+        
+        // Wait for all threads to log WAITING
+        while (threads_waiting < total_commands) {
+            pthread_cond_wait(&priority_cond, &priority_mutex);
+        }
+        all_threads_ready = 1;
+        pthread_cond_broadcast(&priority_cond);  // Wake everyone to check all_threads_ready
+    } else {
+        // Wait for our turn
+        while (current_priority != cmd->priority || !all_threads_ready) {
+            pthread_cond_wait(&priority_cond, &priority_mutex);
+        }
+        log_message("%lld: THREAD %d AWAKENED FOR WORK\n", current_timestamp(), cmd->priority);
     }
     
-    // Now wait for our turn based on priority
-    while (current_priority != cmd->priority) {
-        pthread_cond_wait(&priority_cond, &priority_mutex);
-    }
-    log_message("%lld: THREAD %d AWAKENED FOR WORK\n", current_timestamp(), cmd->priority);
     pthread_mutex_unlock(&priority_mutex);
     
     // Log and execute the command
@@ -81,16 +92,14 @@ void* process_command(void *arg) {
             console_message("%s not found.\n", cmd->name);
         }
     } else if (strcmp(cmd->command, "print") == 0) {
-        // Check if this is the final print (highest priority)
-        extern int g_max_priority;
-        int is_final = (cmd->priority == g_max_priority) ? 1 : 0;
-        print_table(cmd->priority, is_final);
+        log_message("%lld: THREAD %d PRINT\n", current_timestamp(), cmd->priority);
+        print_table(cmd->priority);
     }
     
     // Signal next thread
     pthread_mutex_lock(&priority_mutex);
     current_priority++;
-    pthread_cond_broadcast(&priority_cond);
+    pthread_cond_broadcast(&priority_cond);  // Wake threads: next priority OR thread 0 checking count
     pthread_mutex_unlock(&priority_mutex);
     
     free(cmd);
@@ -284,49 +293,19 @@ int main() {
     
     // Update command_count to actual number of parsed commands
     command_count = idx;
-    total_commands = command_count;
     
     // Sort commands by priority
     qsort(commands, command_count, sizeof(Command *), compare_commands);
     
-    // Find the highest priority and mark the last PRINT command as final
-    // (commands will be freed in threads)
-    int max_priority = 0;
-    int last_was_print = 0;
-    for (int i = 0; i < command_count; i++) {
-        if (commands[i]->priority > max_priority) {
-            max_priority = commands[i]->priority;
-        }
-    }
-    // Commands are sorted by priority, so the last one has highest priority
-    // Mark the last PRINT command so it knows to not print trailing newline
-    if (command_count > 0 && strcmp(commands[command_count - 1]->command, "print") == 0) {
-        last_was_print = 1;
-        // Store max_priority in a way that the thread can access it
-        // Actually, we'll use a global variable or check priority == max_priority in thread
-    }
+    // Set total_commands for barrier
+    total_commands = command_count;
     
-    // Store max_priority globally so threads can check if they're the final print
-    g_max_priority = max_priority;
-    
-    // Create and execute threads in priority order
+    // Create and execute threads
     pthread_t *threads = (pthread_t *)malloc(command_count * sizeof(pthread_t));
     
     for (int i = 0; i < command_count; i++) {
         pthread_create(&threads[i], NULL, process_command, commands[i]);
     }
-    
-    // Wait for all threads to reach waiting state
-    pthread_mutex_lock(&priority_mutex);
-    while (threads_waiting < command_count) {
-        pthread_mutex_unlock(&priority_mutex);
-        usleep(1000);  // Small delay
-        pthread_mutex_lock(&priority_mutex);
-    }
-    // Signal all threads to start
-    all_threads_ready = 1;
-    pthread_cond_broadcast(&priority_cond);
-    pthread_mutex_unlock(&priority_mutex);
     
     // Wait for all threads to complete
     for (int i = 0; i < command_count; i++) {

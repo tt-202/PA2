@@ -119,9 +119,7 @@ hashRecord* search(const char *name, int priority) {
 }
 
 // Print entire table (sorted by hash)
-void print_table(int priority, int is_final) {
-    log_message("%lld: THREAD %d,PRINT,%d\n", current_timestamp(), priority, priority);
-    
+void print_table(int priority) {
     rwlock_acquire_readlock(&rw_lock, priority);
     
     // Count records
@@ -160,14 +158,8 @@ void print_table(int priority, int is_final) {
     
     console_message("Current Database:\n");
     for (i = 0; i < count; i++) {
-        if (i == count - 1 && is_final) {
-            // Last record of final print - don't print newline to match expected output format
-            console_message("%u,%s,%u", records[i]->hash, 
-                           records[i]->name, records[i]->salary);
-        } else {
-            console_message("%u,%s,%u\n", records[i]->hash, 
-                           records[i]->name, records[i]->salary);
-        }
+        console_message("%u,%s,%u\n", records[i]->hash, 
+                       records[i]->name, records[i]->salary);
     }
     
     free(records);
