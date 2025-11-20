@@ -352,7 +352,17 @@ int main() {
                    records[i]->name, records[i]->salary);
         }
         
+        // Also print final database to console
+        console_message("Current Database:\n");
+        for (i = 0; i < count; i++) {
+            console_message("%u,%s,%u\n", records[i]->hash, 
+                           records[i]->name, records[i]->salary);
+        }
+        
         free(records);
+    } else {
+        // Empty database
+        console_message("Current Database:\n");
     }
     
     // Cleanup
