@@ -63,6 +63,18 @@ The AI provided code examples and structure that I then adapted and modified to 
 specific requirements of this assignment. I verified all logic, tested the implementation, 
 and made adjustments to ensure correctness and compliance with the assignment specifications.
 
+In addition, we used Cursor for inter-file contextualization and orchestration. Cursor was able to debug minor issues significantly 
+quicker than normal because it can read our files for us and identify issues. For example, we had spacing issues in the console printed output that didnt 
+exactly match the expected output provided by the assignment. Cursor was able to identify which one of our C files is responsible for printing the console
+messages. We utilized Claude Sonnet 4.5 model in Cursor.
+
+Some prompts we used for debugging:
+- "there are spacing issues in my produced output that do not match the expected output" (I pasted the expected output for comparison)
+- " the awakened print should print when the thread is available, also it needs to print before all the waiting prints. look at the expected hash.log for reference, 
+thread 0 awakens before all the other threads print that they are waiting" (i pasted the expected hash.log output for comparison)
+
+
+
 KNOWN LIMITATIONS:
 ------------------
 - Thread execution order may vary between runs due to OS scheduling
@@ -77,3 +89,5 @@ The program was tested with the provided sample commands and various edge cases 
 - Searching for records
 - Printing empty and populated tables
 - Concurrent operations from multiple threads
+
+We tested finally with the given commands.txt and compared it to the expected output and hash.log provided by Professor Aedo.
